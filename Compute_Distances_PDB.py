@@ -3,7 +3,7 @@ import sys, os
 from math import sqrt 
 
 ###Scripts to compute distance between two residues in PDB files without external libraries (except native python).
-### Given a PDB, Chain 1, Residue 1, Chain 2, and Residue 2, compute the distance between C_{\alpha}'s of Residue 1 and Residue 2. 
+### Given a PDB, Chain 1, Residue 1, Chain 2, and Residue 2, compute the distance between Cα's of Residue 1 and Residue 2. 
 ###Make sure the residue you import are matches record from PDB
 coords = []
 with open(sys.argv[1], 'r') as pdb:
