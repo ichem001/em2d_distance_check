@@ -1,0 +1,53 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -r n
+#$ -j y
+#$ -l mem_free=1G
+#$ -l arch=linux-x64
+#$ -l h_rt=4:00:00
+#$ -R y
+#$ -V
+#$ -l hostname="!opt*"		     	 	      #-- anything but opt*
+#$ -t 1-397                         #-- specify the number of tasks
+#$ -N em2d
+#########################################
+
+
+i=$(($SGE_TASK_ID - 1))
+
+old_IFS=$IFS
+IFS=$'\n'
+lines=($(cat PDB_List.txt))
+IFS=$old_IFS
+
+mkdir Res_Apo_$i
+cd Res_Apo_$i
+
+for m in `seq 0 39`;
+do 
+    
+    em2d_single_score ${lines[$i]}  ../APO/C1-${m}.pgm -r 35 -s 2.21 -n 400 &> tmp_${i}_${m}
+    mv best_projections.pgm BP_$(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}')_${m}.pgm
+    mv images.pgm RF_$(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}')_${m}.pgm
+    score=$(awk 'NR==3' tmp_${i}_${m} | awk '{print $4}')
+    echo $(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}' | awk 'BEGIN{FS="_"}{print $1, $2, $3}') $m $score >> ../Scores_Apo.txt
+    rm tmp_${i}_${m} 
+done
+cd ..
+
+
+mkdir Res_Van_$i
+cd Res_Van_$i
+
+for m in `seq 0 39`;
+do
+
+    em2d_single_score ${lines[$i]}  ../VAN/C1-${m}.pgm -r 35 -s 2.21 -n 400 &> tmp_${i}_${m}
+    mv best_projections.pgm BP_$(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}')_${m}.pgm
+    mv images.pgm RF_$(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}')_${m}.pgm
+    score=$(awk 'NR==3' tmp_${i}_${m} | awk '{print $4}')
+    echo $(echo ${lines[$i]} | awk 'BEGIN{FS="/"}{print $10}'| awk 'BEGIN{FS=".pdb"}{print $1}' | awk 'BEGIN{FS="_"}{print $1, $2, $3}') $m $score >> ../Scores_Van.txt
+    rm tmp_${i}_${m}
+done
+cd ..
